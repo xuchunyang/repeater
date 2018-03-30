@@ -83,6 +83,7 @@ If any of these functions returns nil, repeater will not repeat."
 
 (defun repeater-default-ignore-function ()
   (or (minibufferp)
+      (bound-and-true-p edebug-active)
       (memq this-command repeater-ignore-commands)
       ;; Suggested by @casouri at https://emacs-china.org/t/topic/5414/2
       (and (derived-mode-p 'markdown-mode)

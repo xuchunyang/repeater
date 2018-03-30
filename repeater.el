@@ -47,6 +47,17 @@ If any of these functions returns non-nil, repeater will not repeat."
   :group 'repeater
   :type 'hook)
 
+(defcustom repeater-ignore-commands
+  '(kill-this-buffer
+    keyboard-quit
+    ;; Some delete commands, such as `backward-kill-word', set `this-command' to
+    ;; `kill-region', I don't know to handle this case.  See also (info "(elisp)
+    ;; Command Loop Info")
+    kill-region)
+  "Don't repeat these commands."
+  :group 'repeater
+  :type '(repeat function))
+
 (defcustom repeater-query-function 'repeater-default-query-function
   "Function to call with no arguments to query about repeating.
 If any of these functions returns nil, repeater will not repeat."
@@ -72,9 +83,7 @@ If any of these functions returns nil, repeater will not repeat."
 
 (defun repeater-default-ignore-function ()
   (or (minibufferp)
-      ;; Some delete commands, such as `backward-kill-word', set `this-command' to
-      ;; `kill-region', it will not work.  See also (info "(elisp) Command Loop Info")
-      (eq this-command 'kill-region)
+      (memq this-command repeater-ignore-commands)
       ;; Suggested by @casouri at https://emacs-china.org/t/topic/5414/2
       (and (derived-mode-p 'markdown-mode)
            (equal (this-command-keys-vector) [?\`]))

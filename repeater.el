@@ -121,6 +121,8 @@ If any of these functions returns nil, repeater will not repeat."
                 (message "Repeating '%s' [%d times] (Hit any key to stop)"
                          this-command
                          count)))
+          (discard-input)
+          (message "Quit")
           (setq repeater-ring nil))))))
 
 ;;;###autoload

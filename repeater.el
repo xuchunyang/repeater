@@ -89,25 +89,21 @@ If any of these functions returns nil, repeater will not repeat."
 (defun repeater-post-command ()
   (repeater-ring-push (cons this-command (this-command-keys-vector)))
   (when (apply #'repeater-equals repeater-ring)
-    (let ((message-log-max nil)
-          (name (propertize (symbol-name this-command)
-                            'face font-lock-function-name-face)))
-      (and
-       (null (run-hook-with-args-until-success 'repeater-ignore-functions))
-       (run-hook-with-args-until-success 'repeater-query-function)
-       (condition-case err
-           (let ((count 0))
-             (while (and (sit-for repeater-interval)
-                         (condition-case err
-                             (prog1 t (call-interactively this-command))
-                           (error
-                            (message "%s" (error-message-string err))
-                            nil)))
-               (setq count (1+ count))
-               (message "Repeating %s [%d times] (Hit any key to stop)"
-                        this-command
-                        count)))
-         (setq repeater-ring nil))))))
+    (let ((message-log-max nil))
+      (when (and (null (run-hook-with-args-until-success 'repeater-ignore-functions))
+                 (run-hook-with-args-until-success 'repeater-query-function))
+        (let ((count 0))
+          (while (and (condition-case err
+                          (prog1 t (call-interactively this-command))
+                        (error
+                         (message "%s" (error-message-string err))
+                         nil))
+                      (sit-for repeater-interval))
+            (setq count (1+ count))
+            (message "Repeating '%s' [%d times] (Hit any key to stop)"
+                     this-command
+                     count)))
+        (setq repeater-ring nil)))))
 
 ;;;###autoload
 (define-minor-mode repeater-mode

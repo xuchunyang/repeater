@@ -60,7 +60,7 @@
 
 ;;;###autoload
 (define-minor-mode repeater-mode
-  "如果你连着三次用了同一个命令，帮你自动重复它."
+  "If you run the same command for 3 times, reepat it."
   :global t
   :lighter " Repeater"
   (if repeater-mode

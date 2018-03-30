@@ -3,7 +3,9 @@
 ;; Copyright (C) 2018  Xu Chunyang
 
 ;; Author: Xu Chunyang <mail@xuchunyang.me>
+;; Homepage: https://github.com/xuchunyang/repeater
 ;; Keywords: convenience
+;; Created: Fri, 30 Mar 2018 22:16:53 +0800
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,7 +22,7 @@
 
 ;;; Commentary:
 
-;; 
+;; C-n C-n C-n ...........................................................
 
 ;;; Code:
 

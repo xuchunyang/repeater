@@ -62,7 +62,7 @@ If any of these functions returns nil, repeater will not repeat."
   "List of recent commands.")
 
 (defun repeater-ring-push (elt)
-  (let ((repeater-ring-max (1- repeater-min-times)))
+  (let ((repeater-ring-max repeater-min-times))
     (push elt repeater-ring)
     (when (> (length repeater-ring) repeater-ring-max)
       (setcdr (nthcdr (1- repeater-ring-max) repeater-ring) nil))))
@@ -83,37 +83,31 @@ If any of these functions returns nil, repeater will not repeat."
 
 (defun repeater-default-query-function ()
   (sit-for repeater-sit-for)
-  (message "About to repeat %s (Hit any key to stop)"
-           (propertize (symbol-name this-command)
-                       'face font-lock-function-name-face))
+  (message "About to repeat '%s' (Hit any key to stop)" this-command)
   (sit-for repeater-confirm-timeout))
 
 (defun repeater-post-command ()
-  (repeater-ring-push (cons last-repeatable-command last-command-event))
-  (let* ((this-command-event
-          (let* ((vec (this-command-keys-vector))
-                 (len (length vec)))
-            (and (> len 0) (aref vec (1- len)))))
-         (this (cons this-command this-command-event)))
-    (when (apply #'repeater-equals this repeater-ring)
-      (let ((message-log-max nil)
-            (name (propertize (symbol-name this-command)
-                              'face font-lock-function-name-face)))
-        (and
-         (null (run-hook-with-args-until-success 'repeater-ignore-functions))
-         (run-hook-with-args-until-success 'repeater-query-function)
-         (condition-case err
-             (let ((count 0))
-               (while (and (sit-for repeater-interval)
-                           (condition-case err
-                               (prog1 t (call-interactively this-command))
-                             (error
-                              (message "%s" (error-message-string err))
-                              nil)))
-                 (setq count (1+ count))
-                 (message "Repeating %s [%d times] (Hit any key to stop)"
-                          name count)))
-           (setq repeater-ring nil)))))))
+  (repeater-ring-push (cons this-command (this-command-keys-vector)))
+  (when (apply #'repeater-equals repeater-ring)
+    (let ((message-log-max nil)
+          (name (propertize (symbol-name this-command)
+                            'face font-lock-function-name-face)))
+      (and
+       (null (run-hook-with-args-until-success 'repeater-ignore-functions))
+       (run-hook-with-args-until-success 'repeater-query-function)
+       (condition-case err
+           (let ((count 0))
+             (while (and (sit-for repeater-interval)
+                         (condition-case err
+                             (prog1 t (call-interactively this-command))
+                           (error
+                            (message "%s" (error-message-string err))
+                            nil)))
+               (setq count (1+ count))
+               (message "Repeating %s [%d times] (Hit any key to stop)"
+                        this-command
+                        count)))
+         (setq repeater-ring nil))))))
 
 ;;;###autoload
 (define-minor-mode repeater-mode

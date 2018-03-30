@@ -58,7 +58,7 @@
             (name (propertize (symbol-name this-command)
                               'face font-lock-function-name-face)))
         (and (sit-for repeater-sit-for)
-             (message "About to repeating %s... (Hit any key to quit)" name)
+             (message "About to repeat %s (Hit any key to stop)" name)
              (sit-for repeater-confirm-timeout)
              (condition-case err
                  (let ((count 0))
@@ -69,7 +69,7 @@
                                   (message "%s" (error-message-string err))
                                   nil)))
                      (setq count (1+ count))
-                     (message "Repeating %s [%d times] (Hit any key to quit)"
+                     (message "Repeating %s [%d times] (Hit any key to stop)"
                               name count)))
                (setq repeater-ring nil)))))))
 

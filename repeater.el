@@ -30,13 +30,16 @@
 (defvar repeater-interval 0.1)
 
 (defun repeater-post-command ()
-  (ring-insert repeater-commands (list last-repeatable-command
+  (ring-insert repeater-commands (cons last-repeatable-command
                                        last-command-event))
   (when (= (ring-length repeater-commands) 2)
     (let ((last (ring-ref repeater-commands 0))
           (penult (ring-ref repeater-commands 1)))
       (when (equal last penult)
-        (let ((this (cons this-command (append (this-command-keys-vector) nil))))
+        (let* ((vec (this-command-keys-vector))
+               (len (length vec))
+               (key (and (> len 0) (aref vec (1- len))))
+               (this (cons this-command key)))
           (when (equal this last)
             (let ((message-log-max nil)
                   (name (propertize (symbol-name this-command)

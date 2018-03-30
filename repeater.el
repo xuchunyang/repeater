@@ -25,7 +25,8 @@
 ;;; Code:
 
 (defvar repeater-commands (make-ring 2))
-(defvar repeater-timeout 1)
+(defvar repeater-sit-for .5)
+(defvar repeater-confirm-timeout 1)
 (defvar repeater-interval 0.1)
 
 (defun repeater-post-command ()
@@ -37,25 +38,25 @@
       (when (equal last penult)
         (let ((this (cons this-command (append (this-command-keys-vector) nil))))
           (when (equal this last)
-            (unwind-protect
-                (let ((message-log-max nil)
-                      (name (propertize (symbol-name this-command)
-                                        'face font-lock-function-name-face)))
-                  
-                  (message "About to repeating %s... (Hit any key to quit)" name)
-                  (when (sit-for repeater-timeout)
-                    (let ((count 0))
-                      (while (and (sit-for repeater-interval)
-                                  (condition-case err
-                                      (prog1 t (call-interactively this-command))
-                                    (error
-                                     (message "%s" (error-message-string err))
-                                     nil)))
-                        (setq count (1+ count))
-                        (message "Repeating %s [%d times] (Hit any key to quit)"
-                                 name count)))))
-              (dotimes (_ (ring-length repeater-commands))
-                (ring-remove repeater-commands)))))))))
+            (let ((message-log-max nil)
+                  (name (propertize (symbol-name this-command)
+                                    'face font-lock-function-name-face)))
+              (and (sit-for repeater-sit-for)
+                   (message "About to repeating %s... (Hit any key to quit)" name)
+                   (sit-for repeater-confirm-timeout)
+                   (condition-case err
+                       (let ((count 0))
+                         (while (and (sit-for repeater-interval)
+                                     (condition-case err
+                                         (prog1 t (call-interactively this-command))
+                                       (error
+                                        (message "%s" (error-message-string err))
+                                        nil)))
+                           (setq count (1+ count))
+                           (message "Repeating %s [%d times] (Hit any key to quit)"
+                                    name count)))
+                     (dotimes (_ (ring-length repeater-commands))
+                       (ring-remove repeater-commands)))))))))))
 
 ;;;###autoload
 (define-minor-mode repeater-mode

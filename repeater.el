@@ -4,6 +4,7 @@
 
 ;; Author: Xu Chunyang <mail@xuchunyang.me>
 ;; Homepage: https://github.com/xuchunyang/repeater
+;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: convenience
 ;; Created: Fri, 30 Mar 2018 22:16:53 +0800
 
@@ -115,6 +116,7 @@ If any of these functions returns nil, repeater will not repeat."
   "If you run the same command for 3 times, reepat it."
   :global t
   :lighter " Repeater"
+  :require 'repeater
   (if repeater-mode
       (add-hook 'post-command-hook #'repeater-post-command)
     (remove-hook 'post-command-hook #'repeater-post-command)))

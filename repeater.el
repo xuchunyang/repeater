@@ -71,6 +71,9 @@ If any of these functions returns nil, repeater will not repeat."
 
 (defun repeater-default-ignore-function ()
   (or (minibufferp)
+      ;; Some delete commands, such as `backward-kill-word', set `this-command' to
+      ;; `kill-region', it will not work.  See also (info "(elisp) Command Loop Info")
+      (eq this-command 'kill-region)
       ;; Suggested by @casouri at https://emacs-china.org/t/topic/5414/2
       (and (derived-mode-p 'markdown-mode)
            (equal (this-command-keys-vector) [?\`]))

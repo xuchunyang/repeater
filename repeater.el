@@ -24,42 +24,54 @@
 
 ;;; Code:
 
+(defun repeater-equals (first &rest rest)
+  "Return t if args are equal."
+  (catch 'repeater-equals--break
+    (dolist (elt rest)
+      (or (equal elt first)
+          (throw 'repeater-equals--break nil)))
+    t))
+
+(defvar repeater-ring nil)
+(defvar repeater-ring-max 2)
+
+(defun repeater-ring-push (elt)
+  (push elt repeater-ring)
+  (when (> (length repeater-ring) repeater-ring-max)
+    (setcdr (nthcdr (1- repeater-ring-max) repeater-ring) nil))
+  repeater-ring)
+
 (defvar repeater-commands (make-ring 2))
 (defvar repeater-sit-for .5)
 (defvar repeater-confirm-timeout 1)
 (defvar repeater-interval 0.1)
 
 (defun repeater-post-command ()
-  (ring-insert repeater-commands (cons last-repeatable-command
-                                       last-command-event))
-  (when (= (ring-length repeater-commands) 2)
-    (let ((last (ring-ref repeater-commands 0))
-          (penult (ring-ref repeater-commands 1)))
-      (when (equal last penult)
-        (let* ((vec (this-command-keys-vector))
-               (len (length vec))
-               (key (and (> len 0) (aref vec (1- len))))
-               (this (cons this-command key)))
-          (when (equal this last)
-            (let ((message-log-max nil)
-                  (name (propertize (symbol-name this-command)
-                                    'face font-lock-function-name-face)))
-              (and (sit-for repeater-sit-for)
-                   (message "About to repeating %s... (Hit any key to quit)" name)
-                   (sit-for repeater-confirm-timeout)
-                   (condition-case err
-                       (let ((count 0))
-                         (while (and (sit-for repeater-interval)
-                                     (condition-case err
-                                         (prog1 t (call-interactively this-command))
-                                       (error
-                                        (message "%s" (error-message-string err))
-                                        nil)))
-                           (setq count (1+ count))
-                           (message "Repeating %s [%d times] (Hit any key to quit)"
-                                    name count)))
-                     (dotimes (_ (ring-length repeater-commands))
-                       (ring-remove repeater-commands)))))))))))
+  (repeater-ring-push (cons last-repeatable-command last-command-event))
+  (let* ((this-command-event
+          (let* ((vec (this-command-keys-vector))
+                 (len (length vec)))
+            (and (> len 0) (aref vec (1- len)))))
+         (this (cons this-command this-command-event)))
+    (when (apply #'repeater-equals this repeater-ring)
+      (let ((message-log-max nil)
+            (name (propertize (symbol-name this-command)
+                              'face font-lock-function-name-face)))
+        (and (sit-for repeater-sit-for)
+             (message "About to repeating %s... (Hit any key to quit)" name)
+             (sit-for repeater-confirm-timeout)
+             (condition-case err
+                 (let ((count 0))
+                   (while (and (sit-for repeater-interval)
+                               (condition-case err
+                                   (prog1 t (call-interactively this-command))
+                                 (error
+                                  (message "%s" (error-message-string err))
+                                  nil)))
+                     (setq count (1+ count))
+                     (message "Repeating %s [%d times] (Hit any key to quit)"
+                              name count)))
+               (setq repeater-ring nil)))))))
 
 ;;;###autoload
 (define-minor-mode repeater-mode

@@ -97,9 +97,9 @@ If any of these functions returns nil, repeater will not repeat."
 (defvar repeater-confirm-timeout 1)
 
 (defun repeater-default-query-function ()
-  (sit-for repeater-sit-for)
-  (message "About to repeat '%s' (Hit any key to stop)" this-command)
-  (sit-for repeater-confirm-timeout))
+  (and (sit-for repeater-sit-for)
+       (message "About to repeat '%s' (Hit any key to stop)" this-command)
+       (sit-for repeater-confirm-timeout)))
 
 (defun repeater-post-command ()
   (repeater-ring-push (cons this-command (this-command-keys-vector)))

@@ -50,6 +50,7 @@ If any of these functions returns non-nil, repeater will not repeat."
 (defcustom repeater-ignore-commands
   '(kill-this-buffer
     keyboard-quit
+    ignore
     ;; Some delete commands, such as `backward-kill-word', set `this-command' to
     ;; `kill-region', I don't know to handle this case.  See also (info "(elisp)
     ;; Command Loop Info")

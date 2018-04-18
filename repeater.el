@@ -42,7 +42,7 @@
   :type 'number)
 
 (defcustom repeater-ignore-functions '(repeater-default-ignore-function)
-  "Functions to call with no arguments to check about repeating.
+  "Functions to call with no argument to check about repeating.
 If any of these functions returns non-nil, repeater will not repeat."
   :group 'repeater
   :type 'hook)
@@ -60,13 +60,13 @@ If any of these functions returns non-nil, repeater will not repeat."
   :type '(repeat function))
 
 (defcustom repeater-query-function 'repeater-default-query-function
-  "Function to call with no arguments to query about repeating.
+  "Function to call with no argument to query about repeating.
 If any of these functions returns nil, repeater will not repeat."
   :group 'repeater
   :type 'hook)
 
 (defun repeater-equals (first &rest rest)
-  "Return t if args are equal."
+  "Return t if args are all equal."
   (catch 'repeater-equals--break
     (dolist (elt rest)
       (or (equal elt first)
@@ -128,7 +128,7 @@ If any of these functions returns nil, repeater will not repeat."
 
 ;;;###autoload
 (define-minor-mode repeater-mode
-  "If you run the same command for 3 times, reepat it."
+  "If you run the same command for 3 times, repeat it."
   :global t
   :lighter " Repeater"
   :require 'repeater
